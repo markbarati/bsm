@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>BSM Community</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div id="toast-root" class="toast-root"></div>
+
+  <section id="login-view" class="login-shell hidden">
+    <div class="login-card glass">
+      <div class="brand-mark">BSM</div>
+      <h1>BSM Community</h1>
+      <p>پنل مدیریت، نصب، مانیتورینگ و بازیابی سرور</p>
+      <form id="login-form" class="stack">
+        <label>نام کاربری<input name="username" autocomplete="username" value="admin" required></label>
+        <label>رمز عبور<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="btn primary wide" type="submit">ورود امن</button>
+      </form>
+      <div class="security-note">این پنل باید فقط پشت Cloudflare Access یا SSH Tunnel منتشر شود.</div>
+    </div>
+  </section>
+
+  <div id="app-view" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark small">BSM</div>
+        <div><strong>BSM Community</strong><span>Manager v0.2</span></div>
+      </div>
+      <nav id="nav">
+        <button data-page="dashboard" class="active">◫ داشبورد</button>
+        <button data-page="wizard">✦ راه‌اندازی</button>
+        <button data-page="catalog">⬡ سرویس‌ها</button>
+        <button data-page="containers">▣ کانتینرها</button>
+        <button data-page="jobs">▶ عملیات و لاگ زنده</button>
+        <button data-page="ledger">⌘ تاریخچه تغییرات</button>
+        <button data-page="backup">↺ بکاپ و بازیابی</button>
+        <button data-page="updates">⇪ به‌روزرسانی</button>
+        <button data-page="ai">✦ دستیار AI</button>
+        <button data-page="diagnostics">⚕ عیب‌یابی</button>
+        <button data-page="docs">? راهنما</button>
+        <button data-page="settings">⚙ تنظیمات</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="mini-status"><span id="agent-dot" class="dot"></span><span id="agent-text">Agent</span></div>
+        <button id="logout-btn" class="link-btn">خروج</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">داشبورد</h1>
+          <p id="page-subtitle">نمای کلی سلامت و وضعیت سرور</p>
+        </div>
+        <div class="top-actions">
+          <button id="refresh-btn" class="btn ghost">↻ تازه‌سازی</button>
+          <button id="quick-verify" class="btn secondary">بررسی سلامت</button>
+          <div class="user-chip"><span id="username">admin</span><b>●</b></div>
+        </div>
+      </header>
+
+      <section id="page-dashboard" class="page active">
+        <div class="metric-grid">
+          <article class="metric-card"><div class="metric-icon cpu">CPU</div><div><span>Load</span><strong id="cpu-value">—</strong><div class="bar"><i id="cpu-bar"></i></div></div></article>
+          <article class="metric-card"><div class="metric-icon ram">RAM</div><div><span>Memory</span><strong id="ram-value">—</strong><div class="bar"><i id="ram-bar"></i></div></div></article>
+          <article class="metric-card"><div class="metric-icon disk">SSD</div><div><span>Disk</span><strong id="disk-value">—</strong><div class="bar"><i id="disk-bar"></i></div></div></article>
+          <article class="metric-card"><div class="metric-icon box">CTR</div><div><span>Containers</span><strong id="containers-value">—</strong><small id="containers-note">—</small></div></article>
+        </div>
+
+        <div class="two-col">
+          <article class="panel">
+            <div class="panel-head"><div><h2>سرویس‌های اصلی</h2><p>وضعیت systemd و کنترل‌پنل</p></div><span class="badge live">LIVE</span></div>
+            <div id="service-health" class="health-list skeleton"></div>
+          </article>
+          <article class="panel">
+            <div class="panel-head"><div><h2>اطلاعات سرور</h2><p>مشخصات سیستم فعلی</p></div></div>
+            <dl id="server-info" class="info-list"></dl>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-head"><div><h2>کانتینرهای اخیر</h2><p>وضعیت سریع Docker</p></div><button class="btn ghost" data-goto="containers">نمایش همه</button></div>
+          <div id="dashboard-containers" class="container-cards"></div>
+        </article>
+      </section>
+
+      <section id="page-wizard" class="page">
+        <div class="wizard-steps">
+          <button class="active" data-step="1"><b>1</b><span>مشخصات</span></button>
+          <button data-step="2"><b>2</b><span>شبکه</span></button>
+          <button data-step="3"><b>3</b><span>RDP</span></button>
+          <button data-step="4"><b>4</b><span>بکاپ</span></button>
+          <button data-step="5"><b>5</b><span>بازبینی</span></button>
+        </div>
+        <form id="wizard-form" class="panel form-panel">
+          <div class="wizard-pane active" data-pane="1">
+            <h2>مشخصات پایه</h2>
+            <div class="form-grid">
+              <label>دامنه اصلی<input name="domain" placeholder="example.com" required></label>
+              <label>IP عمومی<input name="public_ip" placeholder="optional"></label>
+              <label>Timezone<input name="timezone" placeholder="UTC"></label>
+              <label>کاربر مالک فایل‌ها<input name="app_owner" placeholder="ubuntu"></label>
+            </div>
+            <div class="callout info">Hestia موجود شناسایی می‌شود و دوباره نصب نخواهد شد.</div>
+          </div>
+          <div class="wizard-pane" data-pane="2">
+            <h2>Cloudflare و دسترسی وب</h2>
+            <div class="form-grid">
+              <label>Hostname پنل<input name="manager_hostname" placeholder="manager.example.com"></label>
+              <label>ایمیل مجاز Access<input name="access_email" type="email" placeholder="you@example.com"></label>
+              <label class="full">Tunnel Token<input name="cloudflare_tunnel_token" type="password" placeholder="خالی بگذار تا مقدار قبلی حفظ شود"></label>
+            </div>
+            <label class="switch-row"><input name="cloudflare_install" type="checkbox"><span class="switch"></span><div><b>نصب و مدیریت cloudflared</b><small>برای پنل‌ها به بازکردن پورت ورودی جداگانه نیاز نیست.</small></div></label>
+          </div>
+          <div class="wizard-pane" data-pane="3">
+            <h2>Remote Desktop</h2>
+            <div class="choice-grid">
+              <label class="choice"><input type="radio" name="rdp_mode" value="cloudflare"><b>Cloudflare Tunnel</b><span>پیشنهادی؛ بدون پورت ورودی RDP</span></label>
+              <label class="choice"><input type="radio" name="rdp_mode" value="public"><b>Public :8888</b><span>فقط از IP/CIDR مشخص</span></label>
+              <label class="choice"><input type="radio" name="rdp_mode" value="disabled"><b>غیرفعال</b><span>کانتینر RDP اجرا نشود</span></label>
+            </div>
+            <div class="form-grid">
+              <label>CIDR مجاز برای Public RDP<input name="rdp_allowed_cidr" placeholder="203.0.113.5/32"></label>
+              <label>پورت عمومی RDP<input name="rdp_public_port" type="number" value="8888"></label>
+              <label>کاربر Webtop<input name="webtop_user" placeholder="admin"></label>
+              <label>رمز Webtop<input name="webtop_password" type="password" placeholder="خالی = حفظ مقدار قبلی"></label>
+              <label>رمز RDP<input name="rdp_password" type="password" placeholder="خالی = حفظ مقدار قبلی"></label>
+            </div>
+          </div>
+          <div class="wizard-pane" data-pane="4">
+            <h2>Remote Storage و بکاپ</h2>
+            <label class="switch-row"><input name="backup_enabled" type="checkbox"><span class="switch"></span><div><b>بکاپ رمزگذاری‌شده زمان‌بندی‌شده</b><small>Remote در rclone باید از قبل آزمایش شده باشد.</small></div></label>
+            <div class="form-grid">
+              <label>نام rclone remote<input name="rclone_remote" placeholder="remote"></label>
+              <label>مسیر مقصد<input name="remote_path" placeholder="backups/server/full"></label>
+              <label>زمان روزانه<input name="backup_hour" type="time" value="04:15"></label>
+              <label>نگهداری روز<input name="retention_days" type="number" min="1" value="14"></label>
+            </div>
+          </div>
+          <div class="wizard-pane" data-pane="5">
+            <h2>بازبینی و اجرا</h2>
+            <div id="review-box" class="review-box"></div>
+            <div class="callout warning">اجرای نصب می‌تواند کانتینرها را recreate کند، اما داده‌های <code>/opt/appdata</code> حذف نمی‌شوند.</div>
+          </div>
+          <div class="wizard-actions">
+            <button type="button" id="wizard-prev" class="btn ghost">مرحله قبل</button>
+            <button type="button" id="wizard-next" class="btn secondary">مرحله بعد</button>
+            <button type="submit" id="wizard-save" class="btn primary hidden">ذخیره و اعمال تنظیمات</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="page-catalog" class="page">
+        <article class="panel">
+          <div class="panel-head"><div><h2>کاتالوگ سرویس‌ها</h2><p>سرویس‌های موردنیاز را انتخاب و وضعیت را reconcile کن.</p></div><button id="catalog-apply" class="btn primary">اعمال انتخاب‌ها</button></div>
+          <div id="app-catalog" class="catalog-grid"></div>
+        </article>
+      </section>
+
+      <section id="page-containers" class="page">
+        <article class="panel">
+          <div class="panel-head"><div><h2>Docker Containers</h2><p>شروع، توقف، restart و مشاهده لاگ</p></div><button id="containers-refresh" class="btn ghost">↻ تازه‌سازی</button></div>
+          <div class="table-wrap"><table><thead><tr><th>نام</th><th>Image</th><th>وضعیت</th><th>CPU</th><th>Memory</th><th>Ports</th><th>عملیات</th></tr></thead><tbody id="containers-table"></tbody></table></div>
+        </article>
+      </section>
+
+      <section id="page-jobs" class="page">
+        <div class="two-col jobs-layout">
+          <article class="panel"><div class="panel-head"><div><h2>عملیات</h2><p>کارهای اخیر و نتیجه اجرا</p></div></div><div id="jobs-list" class="jobs-list"></div></article>
+          <article class="panel log-panel"><div class="panel-head"><div><h2>Live Log</h2><p id="live-log-title">یک Job را انتخاب کن</p></div><button id="clear-log" class="btn ghost">پاک‌کردن نمایش</button></div><pre id="live-log" class="terminal">Ready.</pre></article>
+        </div>
+      </section>
+
+      <section id="page-ledger" class="page">
+        <article class="panel">
+          <div class="panel-head"><div><h2>تاریخچه دستورات و تغییرات</h2><p>نسخه Sanitized برای بازبینی و ارسال به هوش مصنوعی</p></div><div class="button-row"><a class="btn ghost" href="/api/ledger/export/jsonl">JSONL</a><a class="btn ghost" href="/api/ledger/export/sh">Shell Log</a><button id="ledger-refresh" class="btn secondary">تازه‌سازی</button></div></div>
+          <div class="callout info">رمزها و Tokenها قبل از ثبت redacted می‌شوند. هر رکورد شامل زمان، کاربر، دستور، خروجی خلاصه، Exit Code و Hash تغییر فایل است.</div>
+          <div id="ledger-list" class="ledger-list"></div>
+        </article>
+      </section>
+
+      <section id="page-backup" class="page">
+        <div class="three-col">
+          <article class="action-card"><span class="action-icon">↥</span><h3>Backup Now</h3><p>ساخت آرشیو رمزگذاری‌شده و انتقال به rclone remote</p><button data-task="backup" class="btn primary">شروع بکاپ</button></article>
+          <article class="action-card"><span class="action-icon">✓</span><h3>Restore Test</h3><p>آزمایش دانلود، رمزگشایی و استخراج بدون overwrite</p><button data-task="restore-test" class="btn secondary">اجرای تست</button></article>
+          <article class="action-card"><span class="action-icon">⌁</span><h3>Status</h3><p>بررسی Timer، فایل‌های آخر و سلامت remote</p><button data-task="status" class="btn ghost">نمایش وضعیت</button></article>
+        </div>
+        <article class="panel"><h2>اصول بازیابی</h2><ol class="steps-list"><li>کلید خصوصی age را خارج از سرور نگهداری کن.</li><li>Remote storage فقط مقصد بکاپ است، نه storage زنده دیتابیس.</li><li>حداقل ماهی یک Restore Test واقعی اجرا کن.</li><li>قبل از تغییر بزرگ، snapshot یا image از سرور بگیر.</li></ol></article>
+      </section>
+
+      <section id="page-updates" class="page">
+        <div class="two-col">
+          <article class="panel">
+            <h2>آپلود نسخه جدید</h2>
+            <p>فایل <code>.bsmupdate</code> ابتدا Stage و اعتبارسنجی می‌شود. هیچ Script دلخواهی خودکار اجرا نمی‌شود.</p>
+            <form id="update-form" class="drop-zone"><input id="update-file" name="file" type="file" accept=".bsmupdate" required><span>فایل نسخه جدید را انتخاب کن</span><button class="btn primary" type="submit">Upload & Validate</button></form>
+          </article>
+          <article class="panel"><h2>مدل به‌روزرسانی امن</h2><ul class="feature-list"><li>بررسی Path Traversal</li><li>بررسی SHA-256 Payload</li><li>Stage قبل از Apply</li><li>Release Directory جدید و Symlink اتمیک</li><li>امکان Rollback با Release قبلی</li></ul></article>
+        </div>
+        <article class="panel"><div class="panel-head"><div><h2>نسخه‌های Stage شده</h2></div><button id="updates-refresh" class="btn ghost">تازه‌سازی</button></div><div id="updates-list" class="updates-list"></div></article>
+        <article class="panel"><div class="panel-head"><div><h2>Release History و Rollback</h2><p>فعال‌کردن نسخه قبلی به‌صورت اتمیک</p></div></div><div id="releases-list" class="updates-list"></div></article>
+      </section>
+
+      <section id="page-ai" class="page">
+        <div class="two-col ai-layout">
+          <article class="panel">
+            <div class="panel-head"><div><h2>تنظیم سرویس AI</h2><p>کلید API فقط روی Host و با مجوز root ذخیره می‌شود.</p></div><span id="ai-key-status" class="status-pill status-warn">Not configured</span></div>
+            <form id="ai-config-form" class="stack">
+              <label>Provider
+                <select name="provider" id="ai-provider">
+                  <option value="openai">OpenAI Responses API</option>
+                  <option value="anthropic">Anthropic Messages API</option>
+                  <option value="gemini">Google Gemini API</option>
+                  <option value="openai-compatible">OpenAI-compatible endpoint</option>
+                </select>
+              </label>
+              <label>Model<input name="model" id="ai-model" placeholder="Enter a model ID from your provider" required></label>
+              <label id="ai-base-url-row" class="hidden">Base URL<input name="base_url" id="ai-base-url" placeholder="https://provider.example/v1"></label>
+              <label>API Key<input name="api_key" id="ai-api-key" type="password" autocomplete="off" placeholder="Blank keeps the current key"></label>
+              <label class="switch-row compact"><input name="clear_api_key" id="ai-clear-key" type="checkbox"><span class="switch"></span><div><b>حذف کلید ذخیره‌شده</b><small>پس از ذخیره، اتصال AI غیرفعال می‌شود</small></div></label>
+              <div class="form-grid">
+                <label>Timeout seconds<input name="timeout_seconds" type="number" min="15" max="300" value="90"></label>
+                <label>Maximum context characters<input name="max_context_chars" type="number" min="5000" max="250000" value="120000"></label>
+              </div>
+              <button class="btn primary" type="submit">ذخیره تنظیمات AI</button>
+            </form>
+            <div class="callout warning">اشتراک ChatGPT جایگزین اعتبار API نیست. برای OpenAI باید API key و billing جداگانه داشته باشی.</div>
+          </article>
+
+          <article class="panel">
+            <h2>انتخاب اطلاعات قابل ارسال</h2>
+            <p>هیچ اطلاعاتی خودکار ارسال نمی‌شود. ابتدا Preview را ببین.</p>
+            <div class="context-options">
+              <label class="switch-row"><input id="ctx-anonymize" type="checkbox" checked><span class="switch"></span><div><b>ناشناس‌سازی شبکه</b><small>دامنه، ایمیل و IP عمومی با placeholder جایگزین می‌شوند</small></div></label>
+              <label class="switch-row"><input id="ctx-system" type="checkbox" checked><span class="switch"></span><div><b>وضعیت سیستم</b><small>CPU، RAM، disk و سرویس‌ها</small></div></label>
+              <label class="switch-row"><input id="ctx-containers" type="checkbox" checked><span class="switch"></span><div><b>وضعیت کانتینرها</b><small>نام، image، health و portها</small></div></label>
+              <label class="switch-row"><input id="ctx-config" type="checkbox" checked><span class="switch"></span><div><b>تنظیمات پاک‌سازی‌شده</b><small>Tokenها و رمزها حذف می‌شوند</small></div></label>
+              <label class="switch-row"><input id="ctx-ledger" type="checkbox"><span class="switch"></span><div><b>آخرین Command Ledger</b><small>دستورات و نتیجه‌های redacted</small></div></label>
+            </div>
+            <label>لاگ کانتینرها<select id="ai-container-select" multiple size="6"></select></label>
+            <label>لاگ سرویس‌های Host<select id="ai-service-select" multiple size="6">
+              <option value="bsm-agent">bsm-agent</option><option value="docker">docker</option><option value="cloudflared">cloudflared</option><option value="hestia">hestia</option><option value="nginx">nginx</option><option value="mariadb">mariadb</option>
+            </select></label>
+            <div class="button-row"><button id="ai-preview" class="btn secondary">Preview Context</button><button id="ai-copy-context" class="btn ghost">Copy Context</button></div>
+            <div id="ai-context-meta" class="callout info hidden"></div>
+          </article>
+        </div>
+
+        <article class="panel ai-chat-panel">
+          <div class="panel-head"><div><h2>پرسش از AI</h2><p>پاسخ فقط پیشنهادی است؛ هیچ دستور یا تغییری خودکار اجرا نمی‌شود.</p></div><button id="ai-clear" class="btn ghost">پاک‌کردن گفتگو</button></div>
+          <div id="ai-messages" class="ai-messages"><div class="ai-message assistant">سؤال خود را بنویس. قبل از ارسال می‌توانی Context را Preview کنی.</div></div>
+          <form id="ai-chat-form" class="ai-input-row"><textarea id="ai-question" rows="3" placeholder="مثلاً چرا کانتینر Gitea دائم restart می‌شود؟" required></textarea><button class="btn primary" type="submit">ارسال امن</button></form>
+        </article>
+      </section>
+
+      <section id="page-diagnostics" class="page">
+        <div class="hero-panel panel">
+          <div><span class="eyebrow">Support Bundle</span><h2>بسته عیب‌یابی امن بساز</h2><p>وضعیت سیستم، Docker، پورت‌ها، سرویس‌ها، تنظیمات redacted و ۵۰۰ رکورد آخر Command Ledger در یک فایل جمع می‌شود.</p><button id="diagnostics-btn" class="btn primary">ساخت Diagnostic Bundle</button></div>
+          <div class="diag-art">⚕</div>
+        </div>
+        <article class="panel"><h2>اطلاعاتی که جمع‌آوری می‌شود</h2><div class="tag-cloud"><span>OS</span><span>Kernel</span><span>Disk</span><span>RAM</span><span>Ports</span><span>Docker</span><span>Hestia</span><span>Cloudflared</span><span>BSM Agent</span><span>Redacted Config</span><span>Ledger Tail</span></div><div id="diag-result"></div></article>
+      </section>
+
+      <section id="page-docs" class="page">
+        <article class="panel docs">
+          <h2>راهنمای معماری</h2>
+          <div class="architecture"><div>Browser</div><b>HTTPS 443</b><div>Cloudflare Access</div><b>Tunnel</b><div>BSM Web</div><b>Unix Socket</b><div>Root Agent</div><b>Allowlist</b><div>Host</div></div>
+          <h3>چرا Web Container مستقیماً Docker Socket ندارد؟</h3><p>Docker Socket عملاً دسترسی مدیریتی بسیار قدرتمندی به Host می‌دهد. این پنل به‌جای mount کردن socket در Web UI، از یک Agent محلی با API محدود و allowlist استفاده می‌کند.</p>
+          <h3>آدرس پیشنهادی</h3><pre><code>manager.example.com → http://localhost:8788</code></pre>
+          <h3>پورت‌های Oracle</h3><pre><code>22/tcp  فقط IP مدیریت
+80/tcp  سایت‌های Hestia
+443/tcp سایت‌های HTTPS
+8888/tcp فقط در حالت Public RDP و فقط CIDR مجاز</code></pre>
+          <h3>RDP بدون پورت ورودی</h3><pre><code>cloudflared access rdp --hostname rdp.example.com --url rdp://localhost:13389
+mstsc.exe /v:localhost:13389</code></pre>
+          <h3>مسیرها</h3><pre><code>/etc/bsm/                  تنظیمات و secrets
+/var/lib/bsm/              Jobها، آپلودها و diagnostics
+/var/log/bsm/              Agent log و Command Ledger
+/opt/bsm-community/releases/ نسخه‌ها
+/opt/bsm-community/current    نسخه فعال</code></pre>
+        </article>
+      </section>
+
+      <section id="page-settings" class="page">
+        <div class="two-col">
+          <article class="panel"><h2>امنیت حساب</h2><form id="password-form" class="stack"><label>رمز فعلی<input name="current" type="password" required></label><label>رمز جدید<input name="new" type="password" minlength="12" required></label><button class="btn primary" type="submit">تغییر رمز</button></form></article>
+          <article class="panel"><h2>عملیات نگهداری</h2><div class="stack"><button data-task="verify" class="btn secondary">بررسی کامل سرور</button><button data-task="update-containers" class="btn ghost">Pull و Recreate کانتینرها</button><button data-task="status" class="btn ghost">گزارش وضعیت</button></div></article>
+        </div>
+        <article class="panel"><h2>تنظیمات پیشرفته</h2><div class="callout warning">اجرای Taskpackهای unsigned به‌صورت پیش‌فرض غیرفعال است. این محدودیت از اجرای کد دلخواه با دسترسی root جلوگیری می‌کند.</div></article>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="modal"><div class="modal-head"><h3 id="modal-title">Details</h3><button id="modal-close">×</button></div><div id="modal-body"></div></dialog>
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

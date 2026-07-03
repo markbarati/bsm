@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate source
+        run: |
+          ./scripts/public-release-check.sh
+          find . -type f -name '*.sh' -print0 | xargs -0 -n1 bash -n
+          python3 -m compileall -q agent web tools
+          python3 -m unittest -v tests/test_privacy.py
+          node --check web/static/app.js
+          python3 - <<'PY'
+          import yaml
+          for path in ('docker-compose.yml', '.github/workflows/ci.yml', '.github/workflows/release.yml'):
+              with open(path, encoding='utf-8') as f:
+                  yaml.safe_load(f)
+          PY
+
+      - name: Build release files
+        run: |
+          set -Eeuo pipefail
+          VERSION="${GITHUB_REF_NAME#v}"
+          test "$(cat VERSION)" = "$VERSION"
+          mkdir -p dist staging/bsm-community-$VERSION
+          rsync -a --exclude '.git' --exclude 'dist' --exclude 'staging' ./ staging/bsm-community-$VERSION/
+          tar -C staging -czf "dist/bsm-community-$VERSION.tar.gz" "bsm-community-$VERSION"
+          (cd staging && zip -qr "../dist/bsm-community-$VERSION.zip" "bsm-community-$VERSION")
+          python3 tools/build-update.py "staging/bsm-community-$VERSION" "dist/bsm-community-$VERSION.bsmupdate" --version "$VERSION"
+          python3 tools/build-self-extracting.py "staging/bsm-community-$VERSION" "dist/bsm-community-bootstrap-$VERSION.sh"
+          (cd dist && sha256sum * > "bsm-community-$VERSION.sha256")
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --generate-notes --title "BSM Community $GITHUB_REF_NAME"

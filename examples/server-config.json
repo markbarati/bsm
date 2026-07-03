@@ -1,0 +1,37 @@
+{
+  "domain": "example.com",
+  "public_ip": "",
+  "timezone": "UTC",
+  "app_owner": "ubuntu",
+  "apps": {
+    "portainer": true,
+    "homepage": true,
+    "filebrowser": true,
+    "uptime-kuma": true,
+    "dozzle": true,
+    "beszel": true,
+    "gitea": true,
+    "vaultwarden": true,
+    "it-tools": true,
+    "stirling-pdf": true,
+    "webtop": true,
+    "rdesktop": true
+  },
+  "cloudflare": {
+    "install": true,
+    "access_email": "",
+    "manager_hostname": "manager.example.com"
+  },
+  "rdp": {
+    "mode": "cloudflare",
+    "allowed_cidr": "",
+    "install_chromium": true
+  },
+  "backup": {
+    "enabled": false,
+    "rclone_remote": "remote",
+    "remote_path": "backups/server/full",
+    "hour": "04:15",
+    "retention_days": 14
+  }
+}

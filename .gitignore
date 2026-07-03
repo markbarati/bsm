@@ -1,0 +1,40 @@
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+config.local.*
+*.secret
+*.secrets
+secrets.json
+server.json
+bootstrap-admin.json
+agent.token
+cloudflared.env
+
+# Private keys and credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.ppk
+id_rsa*
+id_ed25519*
+credentials.json
+
+# Runtime state and logs
+*.log
+*.db
+*.sqlite*
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+dist/
+build/
+uploads/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

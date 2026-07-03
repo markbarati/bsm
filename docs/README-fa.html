@@ -1,0 +1,32 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>راهنمای BSM Community</title><style>
+body{margin:0;background:#08111f;color:#e8edf7;font-family:Tahoma,Arial,sans-serif;line-height:1.9}main{max-width:1000px;margin:30px auto;padding:28px;background:#101b30;border:1px solid #2b3b5d;border-radius:20px}h1,h2{color:#fff}h2{border-right:5px solid #5e9eff;padding-right:12px;margin-top:34px}pre{direction:ltr;text-align:left;background:#050a12;color:#d9f7e5;padding:16px;border-radius:12px;overflow:auto}code{direction:ltr;unicode-bidi:isolate}.card{background:#14233c;border:1px solid #2c4166;padding:15px;border-radius:14px;margin:12px 0}.warn{background:#352714;border-color:#7c5e25}.ok{background:#102c25;border-color:#286b58}table{width:100%;border-collapse:collapse}td,th{border:1px solid #2b3b5d;padding:10px}a{color:#90bdff}
+</style></head><body><main>
+<h1>BSM Community 0.2.0</h1>
+<p>یک پنل عمومی و بدون اطلاعات شخصی برای نصب، تنظیم، مانیتورینگ، لاگ‌گیری، بکاپ، بازیابی و عیب‌یابی سرور Ubuntu 24.04.</p>
+<div class="card ok"><b>حریم خصوصی:</b> هیچ IP، دامنه، ایمیل، Token یا رمز واقعی داخل Repository نیست. اطلاعات هنگام Bootstrap از کاربر گرفته و فقط روی سرور ذخیره می‌شود.</div>
+<h2>نصب از GitHub عمومی</h2>
+<pre><code>git clone https://github.com/YOUR-USER/YOUR-REPOSITORY.git
+cd YOUR-REPOSITORY
+sudo ./bootstrap.sh</code></pre>
+<p>Bootstrap دامنه، Hostname پنل، Timezone، کاربر فایل‌ها، رمز اولیه و روش دسترسی را می‌پرسد.</p>
+<h2>ساده‌ترین ورود اولیه</h2>
+<p>حالت پیش‌فرض یک آدرس موقت <code>trycloudflare.com</code> می‌سازد و همان لحظه آن را نمایش می‌دهد. این آدرس فقط برای راه‌اندازی اولیه است. پس از ورود، Tunnel دائمی و Cloudflare Access را تنظیم کن.</p>
+<div class="card warn">Quick Tunnel برای Production نیست. پنل همچنان Login داخلی دارد، اما برای استفاده دائمی Named Tunnel و Cloudflare Access لازم است.</div>
+<h2>دستیار AI</h2>
+<p>در صفحه AI می‌توان Provider، Model و API Key را وارد کرد. کلید روی Host با مجوز root ذخیره می‌شود و به مرورگر بازگردانده نمی‌شود.</p>
+<table><tr><th>Provider</th><th>روش</th></tr><tr><td>OpenAI</td><td>Responses API</td></tr><tr><td>Anthropic</td><td>Messages API</td></tr><tr><td>Google</td><td>Gemini API</td></tr><tr><td>سفارشی</td><td>OpenAI-compatible chat completions</td></tr></table>
+<p>کاربر مشخص می‌کند کدام اطلاعات ارسال شوند: وضعیت سیستم، کانتینرها، تنظیمات Redacted، Command Ledger، لاگ کانتینر انتخابی یا لاگ سرویس انتخابی. قبل از ارسال، Preview دقیق نمایش داده می‌شود.</p>
+<div class="card"><b>محدودیت امنیتی:</b> AI فقط مشاوره می‌دهد. پاسخ آن هیچ‌گاه به‌صورت خودکار اجرا نمی‌شود.</div>
+<h2>Command Ledger</h2>
+<pre><code>/var/log/bsm/command-ledger.jsonl
+/var/log/bsm/command-ledger.sh</code></pre>
+<p>دستورها، زمان، کاربر، Exit Code، مدت اجرا، خلاصه خروجی و Hash تغییر فایل‌ها ثبت می‌شود. Secretهای شناخته‌شده قبل از ثبت حذف می‌شوند.</p>
+<h2>انتشار امن Repository</h2>
+<pre><code>./scripts/public-release-check.sh</code></pre>
+<p>همچنین Secret Scanning و Push Protection را در GitHub فعال کن و فایل‌های <code>/etc/bsm</code> یا Logهای واقعی را Commit نکن.</p>
+<h2>مسیرهای مهم</h2>
+<pre><code>/etc/bsm/       تنظیمات و Secretهای root-only
+/var/lib/bsm/   Jobها، Diagnostics و Updateها
+/var/log/bsm/   Logها و Command Ledger
+127.0.0.1:8788 Origin محلی پنل</code></pre>
+</main></body></html>

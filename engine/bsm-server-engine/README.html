@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BSM Server Engine</title>
+<style>
+:root{--bg:#0b1020;--card:#121a2e;--card2:#18233d;--text:#e8edf7;--muted:#a9b5ca;--blue:#5ea1ff;--green:#3ddc97;--yellow:#ffcc66;--red:#ff6b7a;--border:#2b3a5e}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(160deg,#08101f,#101a32 55%,#08101f);color:var(--text);font-family:Tahoma,Arial,sans-serif;line-height:1.95}
+main{max-width:1100px;margin:32px auto;padding:0 18px}.hero{padding:34px;border:1px solid var(--border);border-radius:22px;background:linear-gradient(135deg,#16233f,#10182c);box-shadow:0 25px 70px #0006}
+h1{font-size:34px;margin:0 0 8px}.sub{color:var(--muted)}h2{margin-top:38px;border-right:5px solid var(--blue);padding-right:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:22px 0}.card{background:var(--card);border:1px solid var(--border);padding:18px;border-radius:16px}.ok{color:var(--green)}.warn{color:var(--yellow)}.danger{color:var(--red)}
+pre{direction:ltr;text-align:left;unicode-bidi:plaintext;background:#07101f;border:1px solid #263655;padding:16px;border-radius:14px;overflow:auto;position:relative}
+code{font-family:Consolas,monospace}p code,li code{direction:ltr;unicode-bidi:isolate;background:#24304a;padding:2px 6px;border-radius:6px}
+button.copy{position:absolute;top:8px;right:8px;background:#253b66;color:white;border:1px solid #46649a;border-radius:8px;padding:5px 9px;cursor:pointer}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:14px;overflow:hidden}th,td{padding:10px;border:1px solid var(--border)}th{background:var(--card2)}
+.note{background:#102b25;border:1px solid #226c56;padding:14px;border-radius:14px}.warning{background:#332611;border:1px solid #775b24;padding:14px;border-radius:14px}
+@media(max-width:650px){h1{font-size:27px}.hero{padding:22px}}
+</style></head>
+<body><main>
+<section class="hero"><h1>BSM Server Engine</h1><div class="sub">نصب‌گر مرحله‌ای و قابل‌تکرار برای Ubuntu server، Ubuntu 24.04 ARM64، Hestia، Docker و Cloudflare</div></section>
+
+<div class="grid">
+<div class="card"><b class="ok">قابل ادامه</b><br>Hestia و Docker موجود را شناسایی می‌کند و از وضعیت نیمه‌نصب‌شده ادامه می‌دهد.</div>
+<div class="card"><b class="ok">بدون حذف داده</b><br><code>/opt/appdata</code> حذف نمی‌شود و Compose قبلی بکاپ می‌شود.</div>
+<div class="card"><b class="ok">فقط 80/443</b><br>پنل‌های وب فقط روی localhost هستند و با Cloudflare Tunnel منتشر می‌شوند.</div>
+<div class="card"><b class="warn">RDP انتخابی</b><br>حالت Cloudflare به پورت ورودی نیاز ندارد؛ 8888 فقط حالت اختیاری است.</div>
+</div>
+
+<h2>اصلاحات نسخه دوم</h2>
+<table><tr><th>موضوع</th><th>اصلاح</th></tr>
+<tr><td>File Browser</td><td><code>18081</code> به‌جای پورت Hestia</td></tr>
+<tr><td>Vaultwarden</td><td><code>18084</code> به‌جای پورت Hestia</td></tr>
+<tr><td>Gitea</td><td>ایمیج استاندارد با Volume صحیح <code>/data</code></td></tr>
+<tr><td>مجوزها</td><td><code>/opt/stacks</code> برای ubuntu و داده‌ها با UID/GID مناسب</td></tr>
+<tr><td>Webtop</td><td><code>desktop.example.com</code> پشت Tunnel و Access</td></tr>
+<tr><td>RDP</td><td>Cloudflare client-side tunnel یا پورت 8888 محدودشده</td></tr></table>
+
+<h2>اجرای تعاملی</h2>
+<pre><code>tar -xzf bsm-server-engine.tar.gz
+cd bsm-server-engine
+sudo ./install.sh</code></pre>
+
+<h2>اجرای فایل تنظیمات</h2>
+<pre><code>cp config.env.example config.env
+nano config.env
+sudo ./install.sh --config ./config.env --non-interactive</code></pre>
+
+<div class="note">اجرای مجدد پشتیبانی می‌شود. اسکریپت سرویس‌های انتخاب‌شده را reconcile می‌کند و داده برنامه‌ها را پاک نمی‌کند.</div>
+
+<h2>نمایش وضعیت</h2>
+<pre><code>sudo ./scripts/status.sh</code></pre>
+
+<h2>بررسی نهایی</h2>
+<pre><code>sudo ./install.sh --verify</code></pre>
+
+<h2>Cloudflare Tunnel</h2>
+<pre><code>sudo cat /etc/bsm-engine/cloudflare-routes.md</code></pre>
+<p>تمام پنل‌های وب از بیرون روی HTTPS استاندارد 443 دیده می‌شوند، حتی اگر Origin داخلی پورت دیگری داشته باشد.</p>
+
+<h2>Webtop</h2>
+<table><tr><th>Hostname</th><th>Origin</th><th>تنظیم</th></tr>
+<tr><td><code>desktop.example.com</code></td><td><code>https://localhost:13003</code></td><td>No TLS Verify روشن؛ Cloudflare Access الزامی</td></tr></table>
+
+<h2>RDP پیشنهادی بدون پورت باز</h2>
+<pre><code>rdp.example.com → RDP localhost:18888</code></pre>
+<p>روی ویندوز:</p>
+<pre><code>cloudflared access rdp --hostname rdp.example.com --url rdp://localhost:13389</code></pre>
+<p>سپس Remote Desktop را به <code>localhost:13389</code> وصل کن.</p>
+
+<h2>حالت عمومی 8888</h2>
+<div class="warning">امنیت کمتری دارد. DNS باید خاکستری/DNS-only باشد و Oracle و Hestia فقط IP خانه را مجاز کنند.</div>
+<pre><code>RDP_EXPOSURE="public"
+RDP_ALLOWED_CIDR="YOUR.PUBLIC.IP/32"</code></pre>
+
+<h2>لاگ و رمزها</h2>
+<pre><code>/var/log/bsm-engine/
+/etc/bsm-engine/config.env
+/etc/bsm-engine/secrets.env</code></pre>
+
+<h2>هشدار RDP</h2>
+<p>ایمیج LinuxServer rdesktop که Ubuntu Noble، ARM64، XFCE و xrdp را فراهم می‌کند deprecated است. بنابراین انتخابی است، Docker socket نمی‌گیرد و حالت پیش‌فرض آن Cloudflare است. Chromium با proot-apps به‌صورت persistent نصب می‌شود.</p>
+
+<h2>به‌روزرسانی</h2>
+<pre><code>sudo ./scripts/update.sh</code></pre>
+<script>
+document.querySelectorAll('pre').forEach(p=>{const b=document.createElement('button');b.className='copy';b.textContent='Copy';b.onclick=async()=>{await navigator.clipboard.writeText(p.querySelector('code').innerText);b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1200)};p.appendChild(b)});
+</script>
+</main></body></html>

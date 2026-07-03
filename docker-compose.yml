@@ -1,0 +1,32 @@
+name: bsm-community
+
+services:
+  web:
+    build:
+      context: ./web
+    container_name: bsm-web
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "127.0.0.1:8788:8788"
+    group_add:
+      - "${BSM_GID}"
+    environment:
+      BSM_DATA: /data
+      BSM_AGENT_SOCKET: /run/bsm/agent.sock
+      BSM_AGENT_TOKEN_FILE: /run/secrets/agent_token
+      BSM_BOOTSTRAP_FILE: /run/secrets/bootstrap_admin
+    volumes:
+      - /var/lib/bsm/web:/data
+      - /run/bsm:/run/bsm
+      - /etc/bsm/agent.token:/run/secrets/agent_token:ro
+      - /etc/bsm/bootstrap-admin.json:/run/secrets/bootstrap_admin:ro
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8788/', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

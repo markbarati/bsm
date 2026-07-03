@@ -1,0 +1,10 @@
+{
+  "name": "BSM Community",
+  "version": "0.2.0",
+  "schema": 2,
+  "architecture": [
+    "linux/arm64",
+    "linux/amd64"
+  ],
+  "description": "Public-safe web control plane for Ubuntu 24.04 servers with optional AI diagnostics"
+}
